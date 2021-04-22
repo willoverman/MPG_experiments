@@ -116,6 +116,7 @@ def Q_function2(state, action, policy, gamma, T):
 	return agent2totalreward
 
 def policy_gradient(szero, max_iters, gamma, eta):
+	# szero is the starting state.
 	joint_policy = {}
 	for i in range(2):
 			joint_policy[i, 0] = [.5, .5]
