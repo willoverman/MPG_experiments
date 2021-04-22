@@ -51,8 +51,8 @@ def rollout(state, policy, gamma, T):
 	agent2totalreward = 0
 	curr_state = state
 	for t in range(T):
-		action1 = pick_action(policy[state,0])
-		action2 = pick_action(policy[state,1])
+		action1 = pick_action(policy[curr_state,0])
+		action2 = pick_action(policy[curr_state,1])
 		reward = get_reward(curr_state, action1, action2)
 		curr_state = get_next_state(curr_state, action1, action2)
 
@@ -65,8 +65,8 @@ def visit_dist(state, policy, gamma, T):
 	curr_state = state
 	state_visits = {curr_state: 1}
 	for t in range(T):
-		action1 = pick_action(policy[state,0])
-		action2 = pick_action(policy[state,1])
+		action1 = pick_action(policy[curr_state,0])
+		action2 = pick_action(policy[curr_state,1])
 		curr_state = get_next_state(curr_state, action1, action2)
 		if curr_state in state_visits:
 			state_visits[curr_state] += 1
