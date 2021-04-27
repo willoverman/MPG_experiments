@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 
 def projection_simplex_sort(v, z=1):
     if v.sum() == z and np.alltrue(v >= 0):
@@ -70,39 +71,41 @@ def visit_dist(state, policy, gamma, T):
    #return dist
 
 def Q_function1(state, action, policy, gamma, T):
-	curr_state = state
 	agent1totalreward = 0
-	action1 = action
-	action2 = pick_action(policy[curr_state,1])
-	reward = get_reward(curr_state, action1, action2)
-	agent1totalreward += reward[0]
-	curr_state = get_next_state(curr_state, action1, action2)
-	for t in range(1,T):
-		action1 = pick_action(policy[curr_state,0])
+	for i in range(10):
+		curr_state = state
+		action1 = action
 		action2 = pick_action(policy[curr_state,1])
 		reward = get_reward(curr_state, action1, action2)
+		agent1totalreward += reward[0]
 		curr_state = get_next_state(curr_state, action1, action2)
-		agent1totalreward += (gamma ** t) * reward[0]
+		for t in range(1,T):
+			action1 = pick_action(policy[curr_state,0])
+			action2 = pick_action(policy[curr_state,1])
+			reward = get_reward(curr_state, action1, action2)
+			curr_state = get_next_state(curr_state, action1, action2)
+			agent1totalreward += (gamma ** t) * reward[0]
 
-	return agent1totalreward
+	return (agent1totalreward/10)
 
 def Q_function2(state, action, policy, gamma, T):
-	curr_state = state
 	agent2totalreward = 0
-	action2 = action
-	action1 = pick_action(policy[curr_state,0])
-	reward = get_reward(curr_state, action1, action2)
-	agent2totalreward += reward[1]
-	curr_state = get_next_state(curr_state, action1, action2)
-	for t in range(1,T):
+	for i in range(10):
+		curr_state = state
+		action2 = action
 		action1 = pick_action(policy[curr_state,0])
-		action2 = pick_action(policy[curr_state,1])
 		reward = get_reward(curr_state, action1, action2)
+		agent2totalreward += reward[1]
 		curr_state = get_next_state(curr_state, action1, action2)
+		for t in range(1,T):
+			action1 = pick_action(policy[curr_state,0])
+			action2 = pick_action(policy[curr_state,1])
+			reward = get_reward(curr_state, action1, action2)
+			curr_state = get_next_state(curr_state, action1, action2)
 
-		agent2totalreward += (gamma ** t) * reward[1]
+			agent2totalreward += (gamma ** t) * reward[1]
 
-	return agent2totalreward
+	return (agent2totalreward/10)
 
 def policy_gradient(mu, max_iters, gamma, eta, T):
 	joint_policy = {}
@@ -112,7 +115,6 @@ def policy_gradient(mu, max_iters, gamma, eta, T):
 	dist = {0:mu[0], 1:mu[1]}
             
 	for i in range(max_iters):
-		print(i)
 		dist0 = visit_dist(0, joint_policy, gamma, T)
 		dist1 = visit_dist(1, joint_policy, gamma, T)
 		#print(dist0)		
@@ -140,4 +142,42 @@ def policy_gradient(mu, max_iters, gamma, eta, T):
 	return joint_policy
 
 
-print(policy_gradient([1, 0],60,0.99,0.001,30))
+#print(policy_gradient([1, 0],100,0.99,0.001,10))
+
+def many_runs(how_many, mu, max_iters, gamma, eta, T):
+	state1agent1 = []
+	state1agent2 = []
+	state2agent1 = []
+	state2agent2 = []
+	for r in range(how_many):
+		this_run = policy_gradient(mu, max_iters, gamma, eta, T)
+		state1agent1.append(this_run[0,0][0])
+		state1agent2.append(this_run[0,1][0])
+		state2agent1.append(this_run[1,0][0])
+		state2agent2.append(this_run[1,1][0])
+
+	labels = []
+	x1 = []
+	y1 = []
+	counts1 = []
+	for r in range(how_many):
+		if (state1agent1[r], state1agent2[r]) in labels:
+			loc = labels.index((state1agent1[r], state1agent2[r]))
+			counts1[loc] += 1
+		else:
+			labels.append((state1agent1[r], state1agent2[r]))
+			x1.append(state1agent1[r])
+			y1.append(state1agent2[r])
+			counts1.append(1)
+
+	sizes1 = [c*50 for c in counts1]
+	print(counts1)
+
+	plt.scatter(x1, y1, s = sizes1)
+	plt.show()
+
+
+many_runs(100,[1, 0],100,0.99,0.001,30)
+
+
+
