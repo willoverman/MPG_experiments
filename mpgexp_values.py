@@ -83,24 +83,6 @@ def value_function(players, states, policy, gamma, T):
     value_fun.update((x,v/10) for (x,v) in value_fun.items())
     return value_fun
 
-def Q_function1(state, action, policy, gamma, T):
-	agent1totalreward = 0
-	for i in range(10):
-		curr_state = state
-		action1 = action
-		action2 = pick_action(policy[curr_state,1])
-		reward = get_reward(curr_state, action1, action2)
-		agent1totalreward += reward[0]
-		curr_state = get_next_state(curr_state, action1, action2)
-		for t in range(1,T):
-			action1 = pick_action(policy[curr_state,0])
-			action2 = pick_action(policy[curr_state,1])
-			reward = get_reward(curr_state, action1, action2)
-			curr_state = get_next_state(curr_state, action1, action2)
-			agent1totalreward += (gamma ** t) * reward[0]
-
-	return (agent1totalreward/10)
-
 def Q_function1(state, action, policy, gamma, T, value_fun):
 	agent1totalreward = 0
 	for i in range(10):
