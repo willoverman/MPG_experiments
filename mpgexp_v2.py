@@ -65,7 +65,7 @@ def visit_dist(state, policy, gamma, T, states=[0,1]):
     # This is the un-normalized distribution. The normalizing constant would be (1-gamma^T)/(1-gamma) (or 1-gamma^{T+1}/1-gamma) depending
     # on where the index ends. But according to the formula in Kakade, the normalizing constant appears in the derivative of the value function
     # in which we are interested in, so it cancels out. We probably need to double-check this though.
-    dist = [np.sum((v/10)*(gamma**np.arange(T))) for (k,v) in visit_states.items()]
+    dist = [np.dot(v/10,gamma**np.arange(T)) for (k,v) in visit_states.items()]
     return dist
 
 def Q_function1(state, action, policy, gamma, T):
