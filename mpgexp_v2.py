@@ -50,25 +50,23 @@ def pick_action(prob_dist):
 	action = np.random.choice(acts, 1, p = prob_dist)
 	return action
 
-def visit_dist(state, policy, gamma, T):
-    curr_state = state
-    dist = {curr_state: 1, 1-curr_state:0}
-    for t in range(1,T):
-        action1 = pick_action(policy[curr_state,0])
-        action2 = pick_action(policy[curr_state,1])
-        curr_state = get_next_state(curr_state, action1, action2)
-        dist[curr_state] += gamma**t
-    #if gamma != 1:
-    #    for state in dist:
-    #        dist[state] /=(1-gamma**(T))/(1-gamma)
-    return(dist)
+def visit_dist(state, policy, gamma, T, states=[0,1]):
+    visit_states = {st: np.zeros(T) for st in states}        
 
-   # *** 
-   # This is the normalizing factor to make it into a distribution (a proxy of (1-gamma)).
-   # But since, in the gradient step, we divide with this factor (1/1-gamma), we leave it out.
-   # *** 
-   #print(dist)
-   #return dist
+    for i in range(10):
+        curr_state = state
+        visit_states[curr_state][0] += 1
+        for t in range(1,T):
+            action1 = pick_action(policy[curr_state,0])
+            action2 = pick_action(policy[curr_state,1])
+            curr_state = get_next_state(curr_state, action1, action2)
+            visit_states[curr_state][t] +=1
+    
+    # This is the un-normalized distribution. The normalizing constant would be (1-gamma^T)/(1-gamma) (or 1-gamma^{T+1}/1-gamma) depending
+    # on where the index ends. But according to the formula in Kakade, the normalizing constant appears in the derivative of the value function
+    # in which we are interested in, so it cancels out. We probably need to double-check this though.
+    dist = [np.sum((v/10)*(gamma**np.arange(T))) for (k,v) in visit_states.items()]
+    return dist
 
 def Q_function1(state, action, policy, gamma, T):
 	agent1totalreward = 0
