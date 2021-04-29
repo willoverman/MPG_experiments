@@ -72,6 +72,20 @@ def visit_dist(state, policy, gamma, T):
     dist = [np.dot(v/10,gamma**np.arange(T)) for (k,v) in visit_states.items()]
     return dist 
 
+def value_function(policy, gamma, T):
+    value_fun = {(s,i):0 for s in range(S) for i in range(N)}
+    for state in range(S):
+        for k in range(10):
+            curr_state = state
+            for t in range(T):
+                actions = [pick_action(policy[state, i]) for i in range(N)]
+                rewards = get_reward(curr_state, actions)
+                for i in range(N):
+                    value_fun[state,i] += (gamma**t)*rewards[i]
+                curr_state = get_next_state(curr_state, actions)
+    value_fun.update((x,v/10) for (x,v) in value_fun.items())
+    return value_fun
+
 def Q_function(agent, state, action, policy, gamma, T, samples):
     tot_reward = 0
     for i in range(samples):
@@ -81,6 +95,7 @@ def Q_function(agent, state, action, policy, gamma, T, samples):
         reward = get_reward(state, actions)
         curr_state = get_next_state(curr_state, actions)
         tot_reward += reward[agent]
+        tot_reward += value_function(policy, gamma, T)[curr_state, agent]
 
     return (tot_reward / samples)
 
@@ -107,13 +122,16 @@ def policy_gradient(mu, max_iters, gamma, eta, T, samples):
                 for act in range(M):
                     grads[agent, st, act] = b_dist[st] * Q_function(agent, st, act, policy, gamma, T, samples)
 
+
         for agent in range(N):
             for st in range(S):
                 policy[st, agent] = projection_simplex_sort(np.add(policy[st, agent], eta * grads[agent,st]), z=1)
 
+        print(policy)
+
     return policy
 
-print(policy_gradient([1, 0],100,0.99,0.001,10,10))
+print(policy_gradient([1, 0],60,0.99,0.001,10,5))
 
 
 
