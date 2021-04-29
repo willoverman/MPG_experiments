@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.interpolate import interp1d
 
 N = 2
 M = 2
@@ -106,8 +107,10 @@ def Q_function(agent, state, action, policy, value_fun, gamma, T, samples):
 
 def policy_gradient(mu, max_iters, gamma, eta, T, samples, epsilon):
     policy = {}
-    policy_star = {(0, 0): np.array([1., 0.]), (0, 1): np.array([0., 1.]), (1, 0): np.array([1., 0.]), (1, 1): np.array([1., 0.])}
-    v_star = value_function(policy_star,gamma,T)
+    policy_star1 = {(0, 0): np.array([1., 0.]), (0, 1): np.array([0., 1.]), (1, 0): np.array([1., 0.]), (1, 1): np.array([1., 0.])}
+    policy_star2 =  {(0, 0): np.array([1., 0.]), (0, 1): np.array([0., 1.]), (1, 0): np.array([0., 1.]), (1, 1): np.array([0., 1.])}
+    v_star1 = value_function(policy_star1,gamma,T)
+    v_star2 = value_function(policy_star2,gamma,T)
     ca = []
     iter = "It did not converge to the selected policy_star" #an assignment to "iter" just to avoid errors when performance never gets close to 0. (see the explanation of last changes in the read_me version).
     
@@ -126,7 +129,7 @@ def policy_gradient(mu, max_iters, gamma, eta, T, samples, epsilon):
             b_dist[st] = np.dot(a_dist[st], mu)
 
         v_pi = value_function(policy,gamma,T)
-        ca.append(current_accuracy(mu,v_pi,v_star,gamma,T))
+        ca.append(min(current_accuracy(mu,v_pi,v_star1,gamma,T),current_accuracy(mu,v_pi,v_star2,gamma,T)))
         if ca[t] < epsilon:
             iter = t 
             break
@@ -145,4 +148,23 @@ def policy_gradient(mu, max_iters, gamma, eta, T, samples, epsilon):
         
     return policy,iter,ca
 
-policy_gradient([1, 0],60,0.99,0.001,10,5,0.01)
+
+
+#differing learning rates, plotting iters on x axis and covnergence on y
+plt.figure()
+for lr in [.001, .0001]:
+    policy, itr, ca = policy_gradient([1, 0],200,0.99,lr,10,5,0.01)
+    plt.plot(ca, label=lr)
+plt.legend()
+plt.show()
+
+plt.figure()
+policy, itr, ca = policy_gradient([1, 0],100,0.99,.0005,10,5,0.01)
+x = [i for i in range(itr+1)]
+curve = np.poly1d(np.polyfit(x, ca, 2))
+plt.plot(x, curve(x), 'o', x, ca, '-')
+plt.show()
+
+
+
+#print(policy_gradient([1, 0],100,0.99,0.001,10,5,0.01))
