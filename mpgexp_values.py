@@ -179,4 +179,4 @@ def many_runs(how_many, mu, max_iters, gamma, eta, T):
 	plt.show()
 
 
-many_runs(10,[1, 0],100,0.99,0.001,10)
+many_runs(200,[1, 0],100,0.99,0.001,10)
