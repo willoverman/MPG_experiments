@@ -109,6 +109,7 @@ def policy_gradient(mu, max_iters, gamma, eta, T, samples, epsilon):
     policy_star = {(0, 0): np.array([1., 0.]), (0, 1): np.array([0., 1.]), (1, 0): np.array([1., 0.]), (1, 1): np.array([1., 0.])}
     v_star = value_function(policy_star,gamma,T)
     ca = []
+    iter = "It did not converge to the selected policy_star" #an assignment to "iter" just to avoid errors when performance never gets close to 0. (see the explanation of last changes in the read_me version).
     
     for s in range(S):
         for i in range(N):
@@ -129,7 +130,7 @@ def policy_gradient(mu, max_iters, gamma, eta, T, samples, epsilon):
         if ca[t] < epsilon:
             iter = t 
             break
-        
+            
         grads = np.zeros((N, S, M))
         for agent in range(N):
             for st in range(S):
