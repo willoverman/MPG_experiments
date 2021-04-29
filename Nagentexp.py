@@ -78,7 +78,7 @@ def value_function(policy, gamma, T):
         for k in range(10):
             curr_state = state
             for t in range(T):
-                actions = [pick_action(policy[state, i]) for i in range(N)]
+                actions = [pick_action(policy[curr_state, i]) for i in range(N)]
                 rewards = get_reward(curr_state, actions)
                 for i in range(N):
                     value_fun[state,i] += (gamma**t)*rewards[i]
