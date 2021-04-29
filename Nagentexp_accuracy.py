@@ -57,7 +57,7 @@ def pick_action(prob_dist):
 def visit_dist(state, policy, gamma, T):
     visit_states = {st: np.zeros(T) for st in range(S)}        
 
-    for i in range(10):
+    for i in range(15):
         curr_state = state
         visit_states[curr_state][0] += 1
         for t in range(1,T):
@@ -72,26 +72,25 @@ def visit_dist(state, policy, gamma, T):
     return dist 
 
 def value_function(policy, gamma, T):
-    value_fun = {(s,i):0 for s in range(S) for i in range(N)}
+    repeat = 20
+    value_fun = {(s,i): 0 for s in range(S) for i in range(N)}
     for state in range(S):
-        for k in range(10):
+        for k in range(repeat):
             curr_state = state
             for t in range(T):
-                actions = [pick_action(policy[state, i]) for i in range(N)]
+                actions = [pick_action(policy[curr_state, i]) for i in range(N)]
                 rewards = get_reward(curr_state, actions)
                 for i in range(N):
                     value_fun[state,i] += (gamma**t)*rewards[i]
                 curr_state = get_next_state(curr_state, actions)
-    value_fun.update((x,v/10) for (x,v) in value_fun.items())
+    value_fun.update((x,v/repeat) for (x,v) in value_fun.items())
     return value_fun
 
-def current_accuracy(mu,policy,policy_star,gamma,T):
-    v_star = value_function(policy_star,gamma,T)
-    v_pi   = value_function(policy,gamma,T)
+def current_accuracy(mu,v_pi,v_star,gamma,T):
     total_dif = N * [0]
     for agent in range(N):
         for s in range(S):
-            total_dif[agent] += mu[s]*(value_function(policy,gamma,T)[s,agent]-value_function(policy_star,gamma,T)[s,agent])
+            total_dif[agent] += mu[s]*(v_star[s,agent]-v_pi[s,agent])
     return np.max(total_dif)
 
 def Q_function(agent, state, action, policy, value_fun, gamma, T, samples):
@@ -105,10 +104,10 @@ def Q_function(agent, state, action, policy, value_fun, gamma, T, samples):
         tot_reward += value_fun[next_state,agent] #tot_reward += value_function(policy, gamma, T)[next_state, agent]
     return (tot_reward / samples)
 
-
 def policy_gradient(mu, max_iters, gamma, eta, T, samples, epsilon):
     policy = {}
     policy_star = {(0, 0): np.array([1., 0.]), (0, 1): np.array([0., 1.]), (1, 0): np.array([1., 0.]), (1, 1): np.array([1., 0.])}
+    v_star = value_function(policy_star,gamma,T)
     ca = []
     
     for s in range(S):
@@ -125,7 +124,12 @@ def policy_gradient(mu, max_iters, gamma, eta, T, samples, epsilon):
         for st in range(S):
             b_dist[st] = np.dot(a_dist[st], mu)
 
-        v_pi  = value_function(policy,gamma,T)
+        v_pi = value_function(policy,gamma,T)
+        ca.append(current_accuracy(mu,v_pi,v_star,gamma,T))
+        if ca[t] < epsilon:
+            iter = t 
+            break
+        
         grads = np.zeros((N, S, M))
         for agent in range(N):
             for st in range(S):
@@ -138,11 +142,6 @@ def policy_gradient(mu, max_iters, gamma, eta, T, samples, epsilon):
         
 #         print(policy)
         
-        ca.append(current_accuracy(mu,policy,policy_star,gamma,T))
-        if ca[t] < epsilon:
-            iter = t 
-            break
-
     return policy,iter,ca
 
 policy_gradient([1, 0],60,0.99,0.001,10,5,0.01)
