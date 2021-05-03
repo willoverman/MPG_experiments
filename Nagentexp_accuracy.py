@@ -94,6 +94,13 @@ def current_accuracy(mu,v_pi,v_star,gamma,T):
             total_dif[agent] += mu[s]*(v_star[s,agent]-v_pi[s,agent])
     return np.max(total_dif)
 
+def policy_accuracy(policy_pi, policy_star):
+    total_dif = N * [0]
+    for agent in range(N):
+        for state in range(S):
+            total_dif[agent] += abs(policy_pi[state, agent] - policy_star[state, agent])
+    return np.max(total_dif)
+
 def Q_function(agent, state, action, policy, value_fun, gamma, T, samples):
     tot_reward = 0
     for i in range(samples):
@@ -129,7 +136,7 @@ def policy_gradient(mu, max_iters, gamma, eta, T, samples, epsilon):
             b_dist[st] = np.dot(a_dist[st], mu)
 
         v_pi = value_function(policy,gamma,T)
-        ca.append(min(current_accuracy(mu,v_pi,v_star1,gamma,T),current_accuracy(mu,v_pi,v_star2,gamma,T)))
+        ca.append(min(policy_accuracy(policy,policy_star1),policy_accuracy(policy, policy_star2)))
         if ca[t] < epsilon:
             iter = t 
             break
@@ -152,7 +159,7 @@ def policy_gradient(mu, max_iters, gamma, eta, T, samples, epsilon):
 
 #differing learning rates, plotting iters on x axis and covnergence on y
 plt.figure()
-for lr in [.001, .0001]:
+for lr in [.001, .0001, .00005]:
     policy, itr, ca = policy_gradient([1, 0],200,0.99,lr,10,5,0.01)
     plt.plot(ca, label=lr)
 plt.legend()
