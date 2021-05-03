@@ -159,7 +159,7 @@ def policy_gradient(mu, max_iters, gamma, eta, T, samples, epsilon):
 
 #differing learning rates, plotting iters on x axis and covnergence on y
 plt.figure()
-for lr in [.001, .0001, .00005]:
+for lr in [.001, .0001]:
     policy, itr, ca = policy_gradient([1, 0],200,0.99,lr,10,5,0.01)
     plt.plot(ca, label=lr)
 plt.legend()
