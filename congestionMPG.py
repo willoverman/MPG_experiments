@@ -17,8 +17,8 @@ def projection_simplex_sort(v, z=1):
     return w
 
 
-safe_state = CongGame(4,2,[5,10,20,40])
-bad_state = CongGame(4,2,[-95, -90, -80, -60])
+safe_state = CongGame(4,2,[[5,0],[10.,0],[20,0],[40,0]])
+bad_state = CongGame(4,2,[[5,-100],[10.,-100],[20,-100],[40,-100]])
 
 
 N = safe_state.n

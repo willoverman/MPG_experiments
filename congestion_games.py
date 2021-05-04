@@ -31,7 +31,7 @@ class CongGame:
 		facility_rewards = self.m * [0]
 		for j in range(self.m):
 			#print(facility_rewards)
-			facility_rewards[j] = density[j] * self.weights[j]
+			facility_rewards[j] = density[j] * self.weights[j][0] + self.weights[j][1]
 		return facility_rewards
 
 def get_agent_reward(cong_game, actions, agent_action):
