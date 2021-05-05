@@ -1,0 +1,6 @@
+In congestion_games.py
+
+Line 12: I think it should be self.m instead of self.n
+Line 14: self.facilities, self.d (instead of d).
+
+Question about the use of "actions". 
