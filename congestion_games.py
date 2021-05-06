@@ -9,9 +9,10 @@ class CongGame:
 		self.d = d
 		self.weights = weights
 		self.m = len(weights) #number of facilities
-		self.num_actions = comb(self.n + self.d-1, self.d)
+		self.num_actions = comb(self.m + self.d-1, self.d)
 		self.facilities = [i for i in range(self.m)]
-		self.actions = list(it.combinations_with_replacement(self.facilities,d))
+		#self.actions = list(it.combinations_with_replacement(self.facilities,self.d))
+		self.actions = list(it.chain.from_iterable(it.combinations(self.facilities, r) for r in range(1,self.d+1)))
 
 	def get_counts(self, actions):
 		count = dict.fromkeys(range(self.m),0)
