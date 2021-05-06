@@ -1,6 +1,17 @@
 In congestion_games.py
 
 Line 12: I think it should be self.m instead of self.n
-Line 14: self.facilities, self.d (instead of d). (but this should make no difference).
 
-Question about the use of "actions". 
+Line 14: self.facilities, self.d (instead of d). (but this should make no difference, just to make it consistent with the use of self.d, self.n etc in lines 12,13).
+
+Line 14: A more standard implementation of congestion games is with actions being subsets of the powerset of the facilities.
+This routine (from stack exchange) does it (if we want to do it) 
+###############
+instead of 
+  self.actions = list(it.combinations_with_replacement(self.facilities,d))
+we can have
+  self.actions = list(it.chain.from_iterable(it.combinations(self.facilities, r) for r in range(1,self.d+1)))
+    
+# you may change range(1,self.d+1) to range(len(self.facilities)+1) or anything else.
+################
+Note also that (after a quick check) actions of different size are not a problem for the other subroutines (e.g., get_counts) that we have.
