@@ -2,6 +2,9 @@ from congestion_games import *
 import numpy as np 
 import random
 import copy
+from matplotlib import pyplot as plt
+import statistics
+import seaborn as sns
 
 def projection_simplex_sort(v, z=1):
     if v.sum() == z and np.alltrue(v >= 0):
@@ -149,8 +152,30 @@ def get_accuracies(policy_hist):
     return accuracies
 
 
-policy_hist = policy_gradient([1, 0],20,0.99,0.001,20,5)
+def full_experiment(runs,iters,T):
+    plot_accuracies = []
+    for k in range(experiments):
+        policy_hist = policy_gradient([1, 0],iters,0.99,0.001,T,5)
+        plot_accuracies.append(get_accuracies(policy_hist))
 
-print(get_accuracies(policy_hist))
+    pmean = list(map(statistics.mean, zip(*plot_accuracies)))
+    pstdv = list(map(statistics.stdev, zip(*plot_accuracies)))
+    fig, ax = plt.subplots()
+    clrs = sns.color_palette("husl", 2)
+    with sns.axes_style("darkgrid"):
+        piters = list(range(iters+1))
+        ax.plot(piters, pmean, c = clrs[1],label= 'Mean L1-accuracy')
+        ax.fill_between(piters, np.subtract(pmean,pstdv), np.add(pmean,pstdv), alpha=0.3, facecolor=clrs[1],label="1-standard deviation")
+        ax.legend()
+        plt.grid(linewidth=0.2)
+        plt.xlabel('Iterations')
+        plt.ylabel('L1-accuracy')
+        plt.title('Policy Gradient: 2 Runs')
+    plt.show()
+    return fig
+
+fig = full_experiment(2,1,1)
+fig.savefig('experiment.png')
+
 
 
