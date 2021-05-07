@@ -172,10 +172,7 @@ def full_experiment(runs,iters,T):
         plt.ylabel('L1-accuracy')
         plt.title('Policy Gradient: {} Runs'.format(runs))
     plt.show()
+    fig.savefig('experiment_{}{}{}.png'.format(runs,iters,T))
     return fig
 
-fig = full_experiment(3,1,1)
-fig.savefig('experiment.png')
-
-
-
+fig = full_experiment(4,1,1)
