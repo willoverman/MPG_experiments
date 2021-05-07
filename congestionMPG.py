@@ -154,7 +154,7 @@ def get_accuracies(policy_hist):
 
 def full_experiment(runs,iters,T):
     plot_accuracies = []
-    for k in range(experiments):
+    for k in range(runs):
         policy_hist = policy_gradient([1, 0],iters,0.99,0.001,T,5)
         plot_accuracies.append(get_accuracies(policy_hist))
 
@@ -170,11 +170,11 @@ def full_experiment(runs,iters,T):
         plt.grid(linewidth=0.2)
         plt.xlabel('Iterations')
         plt.ylabel('L1-accuracy')
-        plt.title('Policy Gradient: 2 Runs')
+        plt.title('Policy Gradient: {} Runs'.format(runs))
     plt.show()
     return fig
 
-fig = full_experiment(2,1,1)
+fig = full_experiment(3,1,1)
 fig.savefig('experiment.png')
 
 
