@@ -49,9 +49,9 @@ def get_reward(cong_game, actions):
 	return rewards
 
 
-A = CongGame(4,2,[1,2,3,4])
+#A = CongGame(4,2,[1,2,3,4])
 
-acts = [(0,1), (2,3), (1,3), (1,2)]
+#acts = [(0,1), (2,3), (1,3), (1,2)]
 
 #print(A.actions)
 # gives correct result of [7, 14, 14, 12] as can be verified by hand

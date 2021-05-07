@@ -165,12 +165,6 @@ for lr in [.001, .0001]:
 plt.legend()
 plt.show()
 
-plt.figure()
-policy, itr, ca = policy_gradient([1, 0],100,0.99,.0005,10,5,0.01)
-x = [i for i in range(itr+1)]
-curve = np.poly1d(np.polyfit(x, ca, 2))
-plt.plot(x, curve(x), 'o', x, ca, '-')
-plt.show()
 
 
 

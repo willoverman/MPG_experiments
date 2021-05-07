@@ -1,6 +1,7 @@
 from congestion_games import *
 import numpy as np 
 import random
+import copy
 
 def projection_simplex_sort(v, z=1):
     if v.sum() == z and np.alltrue(v >= 0):
@@ -17,8 +18,8 @@ def projection_simplex_sort(v, z=1):
     return w
 
 
-safe_state = CongGame(4,2,[[5,0],[10.,0],[20,0],[40,0]])
-bad_state = CongGame(4,2,[[5,-100],[10.,-100],[20,-100],[40,-100]])
+safe_state = CongGame(4,1,[[1,0],[2,0],[4,0],[6,0]])
+bad_state = CongGame(4,1,[[1,-100],[2,-100],[4,-100],[6,-100]])
 
 
 N = safe_state.n
@@ -96,13 +97,15 @@ def Q_function(agent, state, action, policy, gamma, T, samples):
     return (tot_reward / samples)
 
 
-
 def policy_gradient(mu, max_iters, gamma, eta, T, samples):
     policy = {}
     for s in range(S):
         for i in range(N):
             policy[s, i] = [1/M for i in range(M)]
-    print(policy)
+
+    policy_hist = []
+    policy_hist.append(copy.deepcopy(policy))
+
     for t in range(max_iters):
 
         a_dist = M *[[0]] #i didnt know what to call it, just intermediate dist values
@@ -123,10 +126,31 @@ def policy_gradient(mu, max_iters, gamma, eta, T, samples):
         for agent in range(N):
             for st in range(S):
                 policy[st, agent] = projection_simplex_sort(np.add(policy[st, agent], eta * grads[agent,st]), z=1)
-        print(policy)
+        #print(policy)
+        policy_hist.append(copy.deepcopy(policy))
+    print(policy_hist)
+    return policy_hist
 
-    return policy
 
-print(policy_gradient([1, 0],60,0.99,0.001,20,5))
+def policy_accuracy(policy_pi, policy_star):
+    total_dif = N * [0]
+    for agent in range(N):
+        for state in range(S):
+            total_dif[agent] += np.sum(np.abs((policy_pi[state, agent] - policy_star[state, agent])))
+    return np.max(total_dif)
+
+
+def get_accuracies(policy_hist):
+    fin = policy_hist[-1]
+    accuracies = []
+    for i in range(len(policy_hist)):
+        this_acc = policy_accuracy(policy_hist[i], fin)
+        accuracies.append(this_acc)
+    return accuracies
+
+
+policy_hist = policy_gradient([1, 0],20,0.99,0.001,20,5)
+
+print(get_accuracies(policy_hist))
 
 
