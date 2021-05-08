@@ -157,7 +157,7 @@ def full_experiment(runs,iters,T,samples):
     fig.savefig('experiment_{}{}{}{}.png'.format(runs,iters,T,samples))
     return fig
 
-fig = full_experiment(5,100,20,30)
+fig = full_experiment(5,50,10,30)
 
 myp_end = process_time()
 elapsed_time = myp_end - myp_start
