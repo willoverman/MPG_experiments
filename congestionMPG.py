@@ -37,6 +37,7 @@ for act in safe_state.actions:
 	counter += 1
 
 state_dic = {0: safe_state, 1: bad_state}
+selected_profiles = {}
 
 def get_next_state(state, actions):
 	acts_from_ints = [act_dic[i] for i in actions]
