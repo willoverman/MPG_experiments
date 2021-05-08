@@ -53,10 +53,10 @@ def pick_action(prob_dist):
     action = np.random.choice(acts, 1, p = prob_dist)
     return action[0]
 
-def visit_dist(state, policy, gamma, T):
+def visit_dist(state, policy, gamma, T, samples):
     visit_states = {st: np.zeros(T) for st in range(S)}        
 
-    for i in range(10):
+    for i in range(samples):
         curr_state = state
         visit_states[curr_state][0] += 1
         for t in range(1,T):
@@ -68,7 +68,7 @@ def visit_dist(state, policy, gamma, T):
     # This is the un-normalized distribution. The normalizing constant would be (1-gamma^T)/(1-gamma) (or 1-gamma^{T+1}/1-gamma) depending
     # on where the index ends. But according to the formula in Kakade, the normalizing constant appears in the derivative of the value function
     # in which we are interested in, so it cancels out. We probably need to double-check this though.
-    dist = [np.dot(v/10,gamma**np.arange(T)) for (k,v) in visit_states.items()]
+    dist = [np.dot(v/samples,gamma**np.arange(T)) for (k,v) in visit_states.items()]
     return dist 
 
 def value_function(policy, gamma, T):
@@ -113,7 +113,7 @@ def policy_gradient(mu, max_iters, gamma, eta, T, samples):
 
         a_dist = M *[[0]] #i didnt know what to call it, just intermediate dist values
         for st in range(S):
-            a_dist[st] = visit_dist(st, policy, gamma, T)
+            a_dist[st] = visit_dist(st, policy, gamma, T,samples)
         
         b_dist = M * [0] #the oens we actually use
         for st in range(S):
