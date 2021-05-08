@@ -142,4 +142,3 @@ def policy_gradient(mu, max_iters, gamma, eta):
 
 
 ans=policy_gradient([0.5, 0.5],1000,0.99,0.001)
-© 2021 GitHub, Inc.
