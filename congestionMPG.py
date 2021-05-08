@@ -91,10 +91,9 @@ def Q_function(agent, state, action, policy, gamma, T, samples):
     for i in range(samples):
         actions = [pick_action(policy[state, i]) for i in range(N)]
         actions[agent] = action
-        curr_state = state
         acts_from_ints = [act_dic[i] for i in actions]
         reward = get_reward(state_dic[state], acts_from_ints)
-        curr_state = get_next_state(curr_state, actions)
+        curr_state = get_next_state(state, actions)
         tot_reward += reward[agent]
         tot_reward += value_function(policy, gamma, T)[curr_state, agent]
 
