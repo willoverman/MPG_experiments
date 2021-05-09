@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import copy
 import statistics
-import seaborn as sns
+import seaborn as sns; sns.set()
 from time import process_time
 
 myp_start = process_time()
@@ -22,8 +22,8 @@ def projection_simplex_sort(v, z=1):
     w = np.maximum(v - theta, 0)
     return w
 
-safe_state = CongGame(8,1,[[1,0],[2,0],[4,0],[6,0]])
-bad_state = CongGame(8,1,[[1,-100],[2,-100],[4,-100],[6,-100]])
+safe_state = CongGame(4,1,[[1,0],[2,0],[4,0],[6,0]])
+bad_state = CongGame(4,1,[[1,-100],[2,-100],[4,-100],[6,-100]])
 
 N = safe_state.n
 M = safe_state.num_actions 
@@ -142,22 +142,19 @@ def full_experiment(runs,iters,T,samples):
 
     pmean = list(map(statistics.mean, zip(*plot_accuracies)))
     pstdv = list(map(statistics.stdev, zip(*plot_accuracies)))
-    fig, ax = plt.subplots()
-    clrs = sns.color_palette("husl", 2)
-    with sns.axes_style("darkgrid"):
-        piters = list(range(iters+1))
-        ax.plot(piters, pmean, c = clrs[1],label= 'Mean L1-accuracy')
-        ax.fill_between(piters, np.subtract(pmean,pstdv), np.add(pmean,pstdv), alpha=0.3, facecolor=clrs[1],label="1-standard deviation")
-        ax.legend()
-        plt.grid(linewidth=0.2)
-        plt.xlabel('Iterations')
-        plt.ylabel('L1-accuracy')
-        plt.title('Policy Gradient: {} Runs'.format(runs))
+    clrs = sns.color_palette("husl", 3)
+    piters = list(range(iters+1))
+    fig = plt.figure(figsize=(6,4))
+    ax = sns.lineplot(piters, pmean, color = clrs[0],label= 'Mean L1-accuracy')
+    ax.fill_between(piters, np.subtract(pmean,pstdv), np.add(pmean,pstdv), alpha=0.3, facecolor=clrs[0],label="1-standard deviation")
+    ax.legend()
+    plt.grid(linewidth=0.6)
+    plt.gca().set(xlabel='Iterations',ylabel='L1-accuracy', title='Policy Gradient: {} Runs'.format(runs))
     plt.show()
-    fig.savefig('experiment_{}{}{}{}.png'.format(runs,iters,T,samples))
+    fig.savefig('experiment_{}{}{}{}.png'.format(runs,iters,T,samples),bbox_inches='tight')
     return fig
 
-fig = full_experiment(5,50,10,30)
+fig = full_experiment(5,4,1,1)
 
 myp_end = process_time()
 elapsed_time = myp_end - myp_start
