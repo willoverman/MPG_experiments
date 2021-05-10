@@ -45,7 +45,7 @@ def get_next_state(state, actions):
 	density = state_dic[state].get_counts(acts_from_ints)
 	max_density = max(density)
 	if state == 0 and max_density > N/2 or state == 1 and max_density > N/4:
-	# if state == 0 and max_density > N/2 and np.random.uniform() > 0.2 or state == 1 and max_density > N/4 and np.random.uniform() > 0.1:
+      # if state == 0 and max_density > N/2 and np.random.uniform() > 0.2 or state == 1 and max_density > N/4 and np.random.uniform() > 0.1:
 		return 1
 	return 0
 
