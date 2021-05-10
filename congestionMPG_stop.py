@@ -56,15 +56,14 @@ def pick_action(prob_dist):
     return action[0]
 
 def visit_dist(state, policy, gamma, T,samples):
-    # Here S is a global variable: is this a good or bad practice?
+    # This is the unnormalized visitation distribution. Since we take finite trajectories, the normalization constant is (1-gamma**T)/(1-gamma).
     visit_states = {st: np.zeros(T) for st in range(S)}        
     for i in range(samples):
         curr_state = state
-        visit_states[curr_state][0] += 1
-        for t in range(1,T):
-            actions = [pick_action(policy[curr_state, i]) for i in range(N)]
-            curr_state = get_next_state(curr_state, actions)
+        for t in range(T):
             visit_states[curr_state][t] += 1
+	    actions = [pick_action(policy[curr_state, i]) for i in range(N)]
+            curr_state = get_next_state(curr_state, actions)
     dist = [np.dot(v/samples,gamma**np.arange(T)) for (k,v) in visit_states.items()]
     return dist 
 
