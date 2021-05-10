@@ -3,14 +3,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 import copy
 import statistics
-import seaborn as sns
+import seaborn as sns; sns.set()
 from time import process_time
 
 myp_start = process_time()
 
 def projection_simplex_sort(v, z=1):
+	# Courtesy: EdwardRaff/projection_simplex.py
     if v.sum() == z and np.alltrue(v >= 0):
-        # best projection: itself!
         return v
     n_features = v.shape[0]
     u = np.sort(v)[::-1]
@@ -22,43 +22,47 @@ def projection_simplex_sort(v, z=1):
     w = np.maximum(v - theta, 0)
     return w
 
+# Define the states and some necessary info
 safe_state = CongGame(8,1,[[1,0],[2,0],[4,0],[6,0]])
 bad_state = CongGame(8,1,[[1,-100],[2,-100],[4,-100],[6,-100]])
-
+state_dic = {0: safe_state, 1: bad_state}
 N = safe_state.n
 M = safe_state.num_actions 
 S = 2
 
-#dictionary associating each action (value) to an integer (key)
+# Dictionary to store the action profiles and rewards to
+selected_profiles = {}
+
+# Dictionary associating each action (value) to an integer (key)
 act_dic = {}
 counter = 0
 for act in safe_state.actions:
 	act_dic[counter] = act 
 	counter += 1
 
-state_dic = {0: safe_state, 1: bad_state}
-selected_profiles={}
-
 def get_next_state(state, actions):
 	acts_from_ints = [act_dic[i] for i in actions]
 	density = state_dic[state].get_counts(acts_from_ints)
 	max_density = max(density)
 	if state == 0 and max_density > N/2 or state == 1 and max_density > N/4:
+	# if state == 0 and max_density > N/2 and np.random.uniform() > 0.2 or state == 1 and max_density > N/4 and np.random.uniform() > 0.1:
 		return 1
 	return 0
 
 def pick_action(prob_dist):
+    # np.random.choice(range(len(prob_dist)), 1, p = prob_dist)[0]
     acts = [i for i in range(len(prob_dist))]
     action = np.random.choice(acts, 1, p = prob_dist)
     return action[0]
 
 def visit_dist(state, policy, gamma, T,samples):
+    # Here S is a global variable: is this a good or bad practice?
     visit_states = {st: np.zeros(T) for st in range(S)}        
     for i in range(samples):
         curr_state = state
         visit_states[curr_state][0] += 1
         for t in range(1,T):
-            actions = [pick_action(policy[state, i]) for i in range(N)]
+            actions = [pick_action(policy[curr_state, i]) for i in range(N)]
             curr_state = get_next_state(curr_state, actions)
             visit_states[curr_state][t] += 1
     dist = [np.dot(v/samples,gamma**np.arange(T)) for (k,v) in visit_states.items()]
