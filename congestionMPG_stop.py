@@ -97,6 +97,7 @@ def policy_accuracy(policy_pi, policy_star):
     for agent in range(N):
         for state in range(S):
             total_dif[agent] += np.sum(np.abs((policy_pi[state, agent] - policy_star[state, agent])))
+	  # total_dif[agent] += np.sqrt(np.sum((policy_pi[state, agent] - policy_star[state, agent])**2))
     return np.max(total_dif)
 
 def policy_gradient(mu, max_iters, gamma, eta, T, samples):
