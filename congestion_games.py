@@ -9,35 +9,27 @@ class CongGame:
 		self.d = d
 		self.weights = weights
 		self.m = len(weights) #number of facilities
-		self.num_actions = comb(self.m + self.d-1, self.d)
+		self.num_actions = sum(comb(self.m,k) for k in range(1,self.d+1))
 		self.facilities = [i for i in range(self.m)]
-		#self.actions = list(it.combinations_with_replacement(self.facilities,self.d))
 		self.actions = list(it.chain.from_iterable(it.combinations(self.facilities, r) for r in range(1,self.d+1)))
 
 	def get_counts(self, actions):
 		count = dict.fromkeys(range(self.m),0)
-		#print(actions)
 		for action in actions:
-			#print(action)
 			for facility in action:
-				#print(facility)
-				#print(np.shape(facility))
 				count[facility] += 1
-		#print(list(count.values()))
 		return list(count.values())
 
-	def get_facilitiy_rewards(self, actions):
+	def get_facility_rewards(self, actions):
 		density = self.get_counts(actions)
-		#print(density)
 		facility_rewards = self.m * [0]
 		for j in range(self.m):
-			#print(facility_rewards)
 			facility_rewards[j] = density[j] * self.weights[j][0] + self.weights[j][1]
 		return facility_rewards
 
 def get_agent_reward(cong_game, actions, agent_action):
 	agent_reward = 0
-	facility_rewards = cong_game.get_facilitiy_rewards(actions)
+	facility_rewards = cong_game.get_facility_rewards(actions)
 	for facility in agent_action:
 		agent_reward += facility_rewards[facility]
 	return agent_reward
@@ -47,13 +39,3 @@ def get_reward(cong_game, actions):
 	for i in range(cong_game.n):
 		rewards[i] = get_agent_reward(cong_game, actions, actions[i])
 	return rewards
-
-
-#A = CongGame(4,2,[1,2,3,4])
-
-#acts = [(0,1), (2,3), (1,3), (1,2)]
-
-#print(A.actions)
-# gives correct result of [7, 14, 14, 12] as can be verified by hand
-
-
