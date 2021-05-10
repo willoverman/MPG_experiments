@@ -74,8 +74,8 @@ def value_function(policy, gamma, T,samples):
             curr_state = state
             for t in range(T):
                 actions = [pick_action(policy[curr_state, i]) for i in range(N)]
-                q = tuple(actions+[state])
-                rewards = selected_profiles.setdefault(q,get_reward(state_dic[state], [act_dic[i] for i in actions]))                  
+                q = tuple(actions+[curr_state])
+                rewards = selected_profiles.setdefault(q,get_reward(state_dic[curr_state], [act_dic[i] for i in actions]))                  
                 for i in range(N):
                     value_fun[state,i] += (gamma**t)*rewards[i]
                 curr_state = get_next_state(curr_state, actions)
