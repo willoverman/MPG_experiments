@@ -69,8 +69,8 @@ def visit_dist(state, policy, gamma, T,samples):
 
 def value_function(policy, gamma, T,samples):
     value_fun = {(s,i):0 for s in range(S) for i in range(N)}
-    for state in range(S):
-        for k in range(samples):
+    for k in range(samples):
+        for state in range(S):
             curr_state = state
             for t in range(T):
                 actions = [pick_action(policy[curr_state, i]) for i in range(N)]
@@ -82,14 +82,14 @@ def value_function(policy, gamma, T,samples):
     value_fun.update((x,v/samples) for (x,v) in value_fun.items())
     return value_fun
 
-def Q_function(agent, state, action, policy, value_fun, samples):
+def Q_function(agent, state, action, policy, gamma, value_fun, samples):
     tot_reward = 0
     for i in range(samples):
         actions = [pick_action(policy[state, i]) for i in range(N)]
         actions[agent] = action
         q = tuple(actions+[state])
         rewards = selected_profiles.setdefault(q,get_reward(state_dic[state], [act_dic[i] for i in actions]))
-        tot_reward += rewards[agent] + value_fun[get_next_state(state, actions), agent]
+        tot_reward += rewards[agent] + gamma*value_fun[get_next_state(state, actions), agent]
     return (tot_reward / samples)
 
 def policy_accuracy(policy_pi, policy_star):
@@ -122,7 +122,7 @@ def policy_gradient(mu, max_iters, gamma, eta, T, samples):
         for agent in range(N):
             for st in range(S):
                 for act in range(M):
-                    grads[agent, st, act] = b_dist[st] * Q_function(agent, st, act, policy, value_fun, samples)
+                    grads[agent, st, act] = b_dist[st] * Q_function(agent, st, act, policy, gamma, value_fun, samples)
 
         for agent in range(N):
             for st in range(S):
