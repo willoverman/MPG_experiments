@@ -162,7 +162,7 @@ def full_experiment(runs,iters,eta,T,samples):
     pmean = list(map(statistics.mean, zip(*plot_accuracies)))
     pstdv = list(map(statistics.stdev, zip(*plot_accuracies)))
     clrs = sns.color_palette("husl", 3)
-    piters = list(range(iters+1))
+    piters = list(range(plot_accuracies.shape[1]))
     fig = plt.figure(figsize=(12,8))
     ax = sns.lineplot(piters, pmean, color = clrs[0],label= 'Mean L1-accuracy')
     ax.fill_between(piters, np.subtract(pmean,pstdv), np.add(pmean,pstdv), alpha=0.3, facecolor=clrs[0],label="1-standard deviation")
