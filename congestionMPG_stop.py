@@ -1,5 +1,6 @@
 from congestion_games import *
 import matplotlib.pyplot as plt
+import itertools
 import numpy as np
 import copy
 import statistics
@@ -62,7 +63,7 @@ def visit_dist(state, policy, gamma, T,samples):
         curr_state = state
         for t in range(T):
             visit_states[curr_state][t] += 1
-	    actions = [pick_action(policy[curr_state, i]) for i in range(N)]
+            actions = [pick_action(policy[curr_state, i]) for i in range(N)]
             curr_state = get_next_state(curr_state, actions)
     dist = [np.dot(v/samples,gamma**np.arange(T)) for (k,v) in visit_states.items()]
     return dist 
@@ -101,25 +102,21 @@ def policy_accuracy(policy_pi, policy_star):
     return np.max(total_dif)
 
 def policy_gradient(mu, max_iters, gamma, eta, T, samples):
-    policy = {}
-    for s in range(S):
-        for i in range(N):
-            policy[s, i] = [1/M for i in range(M)]
 
-    policy_hist = []
-    policy_hist.append(copy.deepcopy(policy))
+    policy = {(s,i): [1/M]*M for s in range(S) for i in range(N)}
+    policy_hist = [copy.deepcopy(policy)]
 
     for t in range(max_iters):
-        print(t)
 
-        b_dist = M * [0] #the ones we actually use
+        b_dist = M * [0]
         for st in range(S):
             a_dist = visit_dist(st, policy, gamma, T, samples)
+
             b_dist[st] = np.dot(a_dist, mu)
             
         grads = np.zeros((N, S, M))
-        
-        value_fun = value_function(policy, gamma, T, samples)        
+        value_fun = value_function(policy, gamma, T, samples)
+	
         for agent in range(N):
             for st in range(S):
                 for act in range(M):
@@ -131,6 +128,7 @@ def policy_gradient(mu, max_iters, gamma, eta, T, samples):
         policy_hist.append(copy.deepcopy(policy))
 
         if policy_accuracy(policy_hist[t], policy_hist[t-1]) < 10e-16:
+      # if policy_accuracy(policy_hist[t+1], policy_hist[t]) < 10e-16: (it makes a difference, not when t=0 but from t=1 onwards.)
             return policy_hist
 
     return policy_hist
@@ -144,40 +142,38 @@ def get_accuracies(policy_hist):
         accuracies.append(this_acc)
     return accuracies
 
-def full_experiment(runs,iters,T,samples):
+def full_experiment(runs,iters,eta,T,samples):
     raw_accuracies = []
     for k in range(runs):
-        policy_hist = policy_gradient([1, 0],iters,0.99,0.01,T,samples)
+        policy_hist = policy_gradient([1, 0],iters,0.99,eta,T,samples)
         raw_accuracies.append(get_accuracies(policy_hist))
 
-    max_length = 0
-    for j in range(runs):
-        max_length = max(max_length, len(raw_accuracies[j]))
+    # max_length = 0
+    # for j in range(runs):
+    #     max_length = max(max_length, len(raw_accuracies[j]))
 
-    plot_accuracies = np.zeros((runs, max_length))
+    # plot_accuracies = np.zeros((runs, max_length))
 
-    for j in range(runs):
-        j_len = len(raw_accuracies[j])
-        plot_accuracies[j][:j_len] = raw_accuracies[j]
-
+    # for j in range(runs):
+    #     j_len = len(raw_accuracies[j])
+    #     plot_accuracies[j][:j_len] = raw_accuracies[j]
+    
+    plot_accuracies = np.array(list(itertools.zip_longest(*raw_accuracies, fillvalue=0))).T
     pmean = list(map(statistics.mean, zip(*plot_accuracies)))
     pstdv = list(map(statistics.stdev, zip(*plot_accuracies)))
-    fig, ax = plt.subplots()
-    clrs = sns.color_palette("husl", 2)
-    with sns.axes_style("darkgrid"):
-        piters = list(range(max_length))
-        ax.plot(piters, pmean, c = clrs[1],label= 'Mean L1-accuracy')
-        ax.fill_between(piters, np.subtract(pmean,pstdv), np.add(pmean,pstdv), alpha=0.3, facecolor=clrs[1],label="1-standard deviation")
-        ax.legend()
-        plt.grid(linewidth=0.2)
-        plt.xlabel('Iterations')
-        plt.ylabel('L1-accuracy')
-        plt.title('Policy Gradient: {} Runs'.format(runs))
+    clrs = sns.color_palette("husl", 3)
+    piters = list(range(iters+1))
+    fig = plt.figure(figsize=(12,8))
+    ax = sns.lineplot(piters, pmean, color = clrs[0],label= 'Mean L1-accuracy')
+    ax.fill_between(piters, np.subtract(pmean,pstdv), np.add(pmean,pstdv), alpha=0.3, facecolor=clrs[0],label="1-standard deviation")
+    ax.legend()
+    plt.grid(linewidth=0.6)
+    plt.gca().set(xlabel='Iterations',ylabel='L1-accuracy', title='Policy Gradient: runs = {}, $\eta$ = {}'.format(runs,eta))
     plt.show()
-    fig.savefig('experiment_{}{}{}{}.png'.format(runs,iters,T,samples))
+    fig.savefig('experiment_{}{}{}{}_{}.png'.format(runs,iters,T,samples,eta),bbox_inches='tight')
     return fig
 
-fig = full_experiment(10,200,30,10)
+full_experiment(4,4,0.01,4,4)
 
 myp_end = process_time()
 elapsed_time = myp_end - myp_start
