@@ -10,7 +10,7 @@ from time import process_time
 myp_start = process_time()
 
 def projection_simplex_sort(v, z=1):
-    # Courtesy: EdwardRaff/projection_simplex.py
+	# Courtesy: EdwardRaff/projection_simplex.py
     if v.sum() == z and np.alltrue(v >= 0):
         return v
     n_features = v.shape[0]
@@ -24,8 +24,8 @@ def projection_simplex_sort(v, z=1):
     return w
 
 # Define the states and some necessary info
-safe_state = CongGame(8,1,[[1,0],[2,0],[4,0],[6,0]])
-bad_state = CongGame(8,1,[[1,-100],[2,-100],[4,-100],[6,-100]])
+safe_state = CongGame(4,1,[[1,0],[2,0],[4,0],[6,0]])
+bad_state = CongGame(4,1,[[1,-100],[2,-100],[4,-100],[6,-100]])
 state_dic = {0: safe_state, 1: bad_state}
 N = safe_state.n
 M = safe_state.num_actions 
@@ -38,17 +38,17 @@ selected_profiles = {}
 act_dic = {}
 counter = 0
 for act in safe_state.actions:
-    act_dic[counter] = act 
-    counter += 1
+	act_dic[counter] = act 
+	counter += 1
 
 def get_next_state(state, actions):
-    acts_from_ints = [act_dic[i] for i in actions]
-    density = state_dic[state].get_counts(acts_from_ints)
-    max_density = max(density)
-    if state == 0 and max_density > N/2 or state == 1 and max_density > N/4:
+	acts_from_ints = [act_dic[i] for i in actions]
+	density = state_dic[state].get_counts(acts_from_ints)
+	max_density = max(density)
+	if state == 0 and max_density > N/2 or state == 1 and max_density > N/4:
       # if state == 0 and max_density > N/2 and np.random.uniform() > 0.2 or state == 1 and max_density > N/4 and np.random.uniform() > 0.1:
-        return 1
-    return 0
+		return 1
+	return 0
 
 def pick_action(prob_dist):
     # np.random.choice(range(len(prob_dist)), 1, p = prob_dist)[0]
@@ -98,7 +98,7 @@ def policy_accuracy(policy_pi, policy_star):
     for agent in range(N):
         for state in range(S):
             total_dif[agent] += np.sum(np.abs((policy_pi[state, agent] - policy_star[state, agent])))
-      # total_dif[agent] += np.sqrt(np.sum((policy_pi[state, agent] - policy_star[state, agent])**2))
+	  # total_dif[agent] += np.sqrt(np.sum((policy_pi[state, agent] - policy_star[state, agent])**2))
     return np.max(total_dif)
 
 def policy_gradient(mu, max_iters, gamma, eta, T, samples):
@@ -116,7 +116,7 @@ def policy_gradient(mu, max_iters, gamma, eta, T, samples):
             
         grads = np.zeros((N, S, M))
         value_fun = value_function(policy, gamma, T, samples)
-    
+	
         for agent in range(N):
             for st in range(S):
                 for act in range(M):
@@ -143,10 +143,23 @@ def get_accuracies(policy_hist):
     return accuracies
 
 def full_experiment(runs,iters,eta,T,samples):
+
+
+    densities = np.zeros((S,M))
+
     raw_accuracies = []
     for k in range(runs):
-        policy_hist = policy_gradient([1, 0],iters,0.99,eta,T,samples)
+        policy_hist = policy_gradient([0.5, 0.5],iters,0.99,eta,T,samples)
         raw_accuracies.append(get_accuracies(policy_hist))
+
+        converged_policy = policy_hist[-1]
+        for i in range(N):
+            for s in range(S):
+                densities[s] += converged_policy[s,i]
+
+    densities = densities / runs
+
+    #densities = densities / runs
 
     # max_length = 0
     # for j in range(runs):
@@ -163,17 +176,61 @@ def full_experiment(runs,iters,eta,T,samples):
     pstdv = list(map(statistics.stdev, zip(*plot_accuracies)))
     clrs = sns.color_palette("husl", 3)
     piters = list(range(plot_accuracies.shape[1]))
-    fig = plt.figure(figsize=(12,8))
+    
+    fig1 = plt.figure(figsize=(12,8))
     ax = sns.lineplot(piters, pmean, color = clrs[0],label= 'Mean L1-accuracy')
     ax.fill_between(piters, np.subtract(pmean,pstdv), np.add(pmean,pstdv), alpha=0.3, facecolor=clrs[0],label="1-standard deviation")
     ax.legend()
     plt.grid(linewidth=0.6)
     plt.gca().set(xlabel='Iterations',ylabel='L1-accuracy', title='Policy Gradient: runs = {}, $\eta$ = {}'.format(runs,eta))
     plt.show()
-    fig.savefig('experiment_{}{}{}{}_{}.png'.format(runs,iters,T,samples,eta),bbox_inches='tight')
-    return fig
+    plt.close()
+    fig1.savefig('experiment_{}{}{}{}_{}.png'.format(runs,iters,T,samples,eta),bbox_inches='tight')
 
-full_experiment(4,4,0.01,4,4)
+
+    fig2 = plt.figure(figsize=(12,8))
+    for i in range(len(plot_accuracies)):
+        plt.plot(piters, plot_accuracies[i])
+    ax.legend()
+    plt.grid(linewidth=0.6)
+    plt.gca().set(xlabel='Iterations',ylabel='L1-accuracy', title='Policy Gradient: runs = {}, $\eta$ = {}'.format(runs,eta))
+    plt.show()
+    plt.close()
+
+
+    
+    print(densities)
+
+    fig3, ax = plt.subplots()
+    index = np.arange(N)
+    bar_width = 0.35
+    opacity = 1
+
+    rects1 = plt.bar(index, densities[0], bar_width,
+    alpha= .7 * opacity,
+    color='b',
+    label='Safe state')
+
+    rects2 = plt.bar(index + bar_width, densities[1], bar_width,
+    alpha= opacity,
+    color='r',
+    label='Distancing state')
+
+    plt.gca().set(xlabel='Facility',ylabel='Average number of agents', title='Policy Gradient: runs = {}, $\eta$ = {}'.format(runs,eta))
+    plt.xticks(index + bar_width/2, ('A', 'B', 'C', 'D'))
+    plt.legend()
+
+    #plt.tight_layout()
+    plt.show()
+
+
+    return fig1, fig2, fig3
+
+
+
+
+
+full_experiment(10,500,0.001,5,5)
 
 myp_end = process_time()
 elapsed_time = myp_end - myp_start
