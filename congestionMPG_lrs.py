@@ -24,11 +24,12 @@ def projection_simplex_sort(v, z=1):
     return w
 
 # Define the states and some necessary info
-safe_state = CongGame(4,1,[[1,0],[2,0],[4,0],[6,0]])
-bad_state = CongGame(4,1,[[1,-100],[2,-100],[4,-100],[6,-100]])
+safe_state = CongGame(8,1,[[1,0],[2,0],[4,0],[6,0]])
+bad_state = CongGame(8,1,[[1,-100],[2,-100],[4,-100],[6,-100]])
 state_dic = {0: safe_state, 1: bad_state}
 N = safe_state.n
 M = safe_state.num_actions 
+D = safe_state.m #number facilities
 S = 2
 
 # Dictionary to store the action profiles and rewards to
@@ -108,6 +109,8 @@ def policy_gradient(mu, max_iters, gamma, eta, T, samples):
 
     for t in range(max_iters):
 
+        print(t)
+
         b_dist = M * [0]
         for st in range(S):
             a_dist = visit_dist(st, policy, gamma, T, samples)
@@ -126,6 +129,7 @@ def policy_gradient(mu, max_iters, gamma, eta, T, samples):
             for st in range(S):
                 policy[st, agent] = projection_simplex_sort(np.add(policy[st, agent], eta[agent] * grads[agent,st]), z=1)
         policy_hist.append(copy.deepcopy(policy))
+
 
         if policy_accuracy(policy_hist[t], policy_hist[t-1]) < 10e-16:
       # if policy_accuracy(policy_hist[t+1], policy_hist[t]) < 10e-16: (it makes a difference, not when t=0 but from t=1 onwards.)
@@ -182,7 +186,7 @@ def full_experiment(runs,iters,eta,T,samples):
     ax.fill_between(piters, np.subtract(pmean,pstdv), np.add(pmean,pstdv), alpha=0.3, facecolor=clrs[0],label="1-standard deviation")
     ax.legend()
     plt.grid(linewidth=0.6)
-    plt.gca().set(xlabel='Iterations',ylabel='L1-accuracy', title='Policy Gradient: runs = {}, $\eta$ = random'.format(runs))
+    plt.gca().set(xlabel='Iterations',ylabel='L1-accuracy', title='Policy Gradient: agents = {}, runs = {}, $\eta$ = random'.format(N, runs))
     plt.show()
     plt.close()
     fig1.savefig('experiment_{}{}{}{}_{}.png'.format(runs,iters,T,samples,eta),bbox_inches='tight')
@@ -193,7 +197,7 @@ def full_experiment(runs,iters,eta,T,samples):
         plt.plot(piters, plot_accuracies[i])
     ax.legend()
     plt.grid(linewidth=0.6)
-    plt.gca().set(xlabel='Iterations',ylabel='L1-accuracy', title='Policy Gradient: runs = {}, $\eta$ = random'.format(runs))
+    plt.gca().set(xlabel='Iterations',ylabel='L1-accuracy', title='Policy Gradient: agents = {}, runs = {}, $\eta$ = random'.format(N, runs))
     plt.show()
     plt.close()
 
@@ -202,10 +206,12 @@ def full_experiment(runs,iters,eta,T,samples):
     print(densities)
 
     fig3, ax = plt.subplots()
-    index = np.arange(N)
+    index = np.arange(D)
     bar_width = 0.35
     opacity = 1
 
+    print(len(index))
+    print(len(densities[0]))
     rects1 = plt.bar(index, densities[0], bar_width,
     alpha= .7 * opacity,
     color='b',
@@ -216,7 +222,7 @@ def full_experiment(runs,iters,eta,T,samples):
     color='r',
     label='Distancing state')
 
-    plt.gca().set(xlabel='Facility',ylabel='Average number of agents', title='Policy Gradient: runs = {}, $\eta$ = random'.format(runs))
+    plt.gca().set(xlabel='Facility',ylabel='Average number of agents', title='Policy Gradient: agents = {}, runs = {}, $\eta$ = random'.format(N,runs))
     plt.xticks(index + bar_width/2, ('A', 'B', 'C', 'D'))
     plt.legend()
 
@@ -228,9 +234,9 @@ def full_experiment(runs,iters,eta,T,samples):
 
 
 
-eta = [np.random.uniform(.0005, .005) for i in range(N)]
+eta = [np.random.uniform(.00005, .0005) for i in range(N)]
 
-full_experiment(10,500,eta,5,5)
+full_experiment(10,1000,eta,20,10)
 
 myp_end = process_time()
 elapsed_time = myp_end - myp_start
