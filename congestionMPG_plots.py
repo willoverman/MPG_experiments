@@ -113,7 +113,7 @@ def policy_gradient(mu, max_iters, gamma, eta, T, samples):
 
     for t in range(max_iters):
 
-        print(t)
+        #print(t)
 
         b_dist = M * [0]
         for st in range(S):
@@ -160,7 +160,6 @@ def full_experiment(runs,iters,eta,T,samples):
         raw_accuracies.append(get_accuracies(policy_hist))
 
         converged_policy = policy_hist[-1]
-        print(converged_policy)
         for i in range(N):
             for s in range(S):
                 densities[s] += converged_policy[s,i]
@@ -179,43 +178,42 @@ def full_experiment(runs,iters,eta,T,samples):
     #     j_len = len(raw_accuracies[j])
     #     plot_accuracies[j][:j_len] = raw_accuracies[j]
     
-    plot_accuracies = np.array(list(itertools.zip_longest(*raw_accuracies, fillvalue=0))).T
-    pmean = list(map(statistics.mean, zip(*plot_accuracies)))
-    pstdv = list(map(statistics.stdev, zip(*plot_accuracies)))
+    plot_accuracies = np.array(list(itertools.zip_longest(*raw_accuracies, fillvalue=np.nan))).T
     clrs = sns.color_palette("husl", 3)
     piters = list(range(plot_accuracies.shape[1]))
+
+    fig2 = plt.figure(figsize=(6,4))
+    for i in range(len(plot_accuracies)):
+        plt.plot(piters, plot_accuracies[i])
+    plt.grid(linewidth=0.6)
+    plt.gca().set(xlabel='Iterations',ylabel='L1-accuracy', title='Policy Gradient: agents = {}, runs = {}, $\eta$ = {}'.format(N, runs,eta))
+    plt.show()
+    fig2.savefig('individual_runs_n{}.png'.format(N),bbox_inches='tight')
+    #plt.close()
     
-    fig1 = plt.figure(figsize=(12,8))
+    plot_accuracies = np.nan_to_num(plot_accuracies)
+    pmean = list(map(statistics.mean, zip(*plot_accuracies)))
+    pstdv = list(map(statistics.stdev, zip(*plot_accuracies)))
+    
+    fig1 = plt.figure(figsize=(6,4))
     ax = sns.lineplot(piters, pmean, color = clrs[0],label= 'Mean L1-accuracy')
     ax.fill_between(piters, np.subtract(pmean,pstdv), np.add(pmean,pstdv), alpha=0.3, facecolor=clrs[0],label="1-standard deviation")
     ax.legend()
     plt.grid(linewidth=0.6)
     plt.gca().set(xlabel='Iterations',ylabel='L1-accuracy', title='Policy Gradient: agents = {}, runs = {}, $\eta$ = {}'.format(N, runs,eta))
     plt.show()
-    plt.close()
-    fig1.savefig('experiment_{}{}{}{}_{}.png'.format(runs,iters,T,samples,eta),bbox_inches='tight')
-
-
-    fig2 = plt.figure(figsize=(12,8))
-    for i in range(len(plot_accuracies)):
-        plt.plot(piters, plot_accuracies[i])
-    ax.legend()
-    plt.grid(linewidth=0.6)
-    plt.gca().set(xlabel='Iterations',ylabel='L1-accuracy', title='Policy Gradient: agents = {}, runs = {}, $\eta$ = {}'.format(N, runs,eta))
-    plt.show()
-    plt.close()
-
-
+    fig1.savefig('avg_runs_n{}.png'.format(N),bbox_inches='tight')
+    #plt.close()
     
-    print(densities)
+    #print(densities)
 
     fig3, ax = plt.subplots()
     index = np.arange(D)
     bar_width = 0.35
     opacity = 1
 
-    print(len(index))
-    print(len(densities[0]))
+    #print(len(index))
+    #print(len(densities[0]))
     rects1 = plt.bar(index, densities[0], bar_width,
     alpha= .7 * opacity,
     color='b',
@@ -229,16 +227,14 @@ def full_experiment(runs,iters,eta,T,samples):
     plt.gca().set(xlabel='Facility',ylabel='Average number of agents', title='Policy Gradient: agents = {}, runs = {}, $\eta$ = {}'.format(N,runs,eta))
     plt.xticks(index + bar_width/2, ('A', 'B', 'C', 'D'))
     plt.legend()
-
-    #plt.tight_layout()
+    fig3.savefig('facilities_n{}.png'.format(N),bbox_inches='tight')
+   #plt.close()
     plt.show()
-
 
     return fig1, fig2, fig3
 
-
-
-full_experiment(5,500,0.0001,20,10)
+#full_experiment(10,1000,0.0001,20,10)
+full_experiment(10,1000,0.0001,20,10)
 
 myp_end = process_time()
 elapsed_time = myp_end - myp_start
