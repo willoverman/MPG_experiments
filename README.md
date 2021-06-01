@@ -17,7 +17,7 @@ Main File:
 value function (of each agent) and the Q-function (of each agent). The stopping criterion is that two successive updates in the policy space do not differ more than a constant
 in the L1-norm. The constant that we used in the experiments is 10e-16.
 
-Othe Files:
+Other Files:
 
 The files congestionMPG_lrs (lrs = learning rates) and congestionMPG_ord (ord = ordinal MPG) implement the variations of the main experiment 
 (experiment of Section 5 of the main paper) that are shown in the supplementary material. Their structure is very similar to the main file.
