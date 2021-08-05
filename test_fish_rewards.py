@@ -35,6 +35,9 @@ class FishGame:
             
 def get_reward(fish_game, actions):
     rewards = np.log(np.dot(actions,fish_game.F))
+    for i in range(len(rewards)):
+        if rewards[i] < 0:
+            rewards[i] = -10000
     return rewards
 
 # Define the states and some necessary info
@@ -96,7 +99,7 @@ def policy_accuracy(policy_pi, policy_star):
 
 def policy_gradient(mu, max_iters, gamma, eta, T, samples):
 
-    policy = {(s,i): [1/(s+1)]*(s+1) for s in range(S) for i in range(N)}
+    policy = {(s,i): [1/(S)]*S for i in range(N) for s in range(S)}
     policy_hist = [copy.deepcopy(policy)]
 
     for t in range(max_iters):
@@ -156,7 +159,7 @@ def full_experiment(runs,iters,eta,T,samples):
     #     j_len = len(raw_accuracies[j])
     #     plot_accuracies[j][:j_len] = raw_accuracies[j]
     
-    plot_accuracies = np.array(list(itertools.zip_longest(*raw_accuracies, fillvalue=np.nan))).T
+    plot_accuracies = np.array(list(it.zip_longest(*raw_accuracies, fillvalue=np.nan))).T
     clrs = sns.color_palette("husl", 3)
     piters = list(range(plot_accuracies.shape[1]))
 
@@ -200,7 +203,7 @@ def full_experiment(runs,iters,eta,T,samples):
     return fig1, fig2, fig3
 
 #full_experiment(10,1000,0.0001,20,10)
-full_experiment(2,2,0.0001,2,2)
+full_experiment(10,10,0.0001,2,2)
 
 myp_end = process_time()
 elapsed_time = myp_end - myp_start
