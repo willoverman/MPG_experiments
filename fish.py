@@ -24,16 +24,15 @@ def projection_simplex_sort(v, z=1):
     return w
 
 # Define the states and some necessary info
-N = 8 #number of agents
-harm = - 100 * N # pentalty for being in bad state
+N = 5 #number of agents/countries
+F = 50 #number of fish
+M = F
+alpha = 0.5 #alpha paramater for state transition
 
-safe_state = CongGame(N,1,[[1,0],[2,0],[4,0],[6,0]])
-bad_state = CongGame(N,1,[[1,-100],[2,-100],[4,-100],[6,-100]])
-state_dic = {0: safe_state, 1: bad_state}
 
-M = safe_state.num_actions 
-D = safe_state.m #number facilities
-S = 2
+state_dic = {i:i for i in range(0,F)}
+
+S = 50
 
 # Dictionary to store the action profiles and rewards to
 selected_profiles = {}
@@ -41,19 +40,15 @@ selected_profiles = {}
 # Dictionary associating each action (value) to an integer (key)
 act_dic = {}
 counter = 0
-for act in safe_state.actions:
-	act_dic[counter] = act 
+for act in range(F):
+	act_dic[counter] = 1 / (act + 1) 
 	counter += 1
 
 def get_next_state(state, actions):
-    acts_from_ints = [act_dic[i] for i in actions]
-    density = state_dic[state].get_counts(acts_from_ints)
-    max_density = max(density)
-
-    if state == 0 and max_density > N/2 or state == 1 and max_density > N/4:
-      # if state == 0 and max_density > N/2 and np.random.uniform() > 0.2 or state == 1 and max_density > N/4 and np.random.uniform() > 0.1:
-        return 1
-    return 0
+	print(state)
+	acts_from_ints = [act_dic[i] for i in actions]
+	new_state = np.ceil((state_dic[state] - np.dot(acts_from_ints, N * [state_dic[state]])) ** alpha)
+	return new_state
 
 def pick_action(prob_dist):
     # np.random.choice(range(len(prob_dist)), 1, p = prob_dist)[0]
@@ -152,19 +147,14 @@ def get_accuracies(policy_hist):
 def full_experiment(runs,iters,eta,T,samples):
 
 
-    densities = np.zeros((S,M))
-
     raw_accuracies = []
     for k in range(runs):
-        policy_hist = policy_gradient([0.5, 0.5],iters,0.99,eta,T,samples)
+
+        policy_hist = policy_gradient(F * [1/F],iters,0.99,eta,T,samples)
         raw_accuracies.append(get_accuracies(policy_hist))
 
         converged_policy = policy_hist[-1]
-        for i in range(N):
-            for s in range(S):
-                densities[s] += converged_policy[s,i]
-
-    densities = densities / runs
+ 
 
     #densities = densities / runs
 
@@ -211,18 +201,6 @@ def full_experiment(runs,iters,eta,T,samples):
     index = np.arange(D)
     bar_width = 0.35
     opacity = 1
-
-    #print(len(index))
-    #print(len(densities[0]))
-    rects1 = plt.bar(index, densities[0], bar_width,
-    alpha= .7 * opacity,
-    color='b',
-    label='Safe state')
-
-    rects2 = plt.bar(index + bar_width, densities[1], bar_width,
-    alpha= opacity,
-    color='r',
-    label='Distancing state')
 
     plt.gca().set(xlabel='Facility',ylabel='Average number of agents', title='Policy Gradient: agents = {}, runs = {}, $\eta$ = {}'.format(N,runs,eta))
     plt.xticks(index + bar_width/2, ('A', 'B', 'C', 'D'))
