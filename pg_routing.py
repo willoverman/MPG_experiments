@@ -13,7 +13,7 @@ selected_profiles = {}
 
 NUM_LAYERS = 2
 NUM_UNITS = 2
-NUM_AGENTS = 8
+NUM_AGENTS = 4
 S = NUM_UNITS**NUM_AGENTS
 N = NUM_AGENTS
 M = NUM_UNITS
@@ -157,7 +157,7 @@ def full_experiment(runs, iters, eta, T, samples):
 
     raw_accuracies = []
     for k in range(runs):
-        policy_hist = policy_gradient([1/256]*256,iters,0.99,eta,T,samples)
+        policy_hist = policy_gradient([1/16]*16,iters,0.99,eta,T,samples)
         raw_accuracies.append(get_accuracies(policy_hist))
 
         converged_policy = policy_hist[-1]
@@ -237,7 +237,7 @@ def full_experiment(runs, iters, eta, T, samples):
     return fig1, fig2, fig3
 
 #full_experiment(10,1000,0.0001,20,10)
-full_experiment(10,500,0.0001,20,10)
+full_experiment(3,2000,0.0001,20,10)
 
 myp_end = process_time()
 elapsed_time = myp_end - myp_start
